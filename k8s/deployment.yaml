@@ -45,7 +45,7 @@ spec:
             timeoutSeconds: 5
           env:
             - name: RUST_LOG
-              value: actix_web=info,actix_server=info,actix_web_middleware_keycloak_auth=trace
+              value: actix_web=info,actix_server=info,actix_web_middleware_keycloak_auth=info
             - name: KEYCLOAK_PUBLIC_KEY
               valueFrom:
                 secretKeyRef:
