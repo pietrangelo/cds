@@ -1,5 +1,5 @@
-use core::fmt;
 use actix_files as afs;
+use core::fmt;
 use std::fs;
 
 use std::time::{SystemTime, UNIX_EPOCH};
@@ -12,13 +12,12 @@ use futures::TryStreamExt;
 use serde::{Deserialize, Serialize};
 
 use actix_web::error::{ErrorForbidden, ErrorNotFound};
-use serde_json;
+use serde_json::json;
 use std::borrow::Borrow;
 use std::fmt::Formatter;
 use std::io::Write;
 use std::os::unix::fs::MetadataExt;
 use std::path::PathBuf;
-use serde_json::json;
 
 const PUBLIC_UPLOAD_PATH: &str = "./entando-data/public/";
 const PROTECTED_UPLOAD_PATH: &str = "./entando-data/protected/";
@@ -53,7 +52,6 @@ pub async fn health_check() -> Result<HttpResponse, Error> {
     Ok(HttpResponse::Ok().json(&HealthCheck {
         status: "ok".to_string(),
     }))
-    .into()
 }
 
 /// This struct defines a FileResource, which is used by the `upload` REST API
@@ -115,17 +113,22 @@ impl Responder for PathResource {
 
 /// This is the fmt::Display standard implementation for the PathResource struct.
 impl fmt::Display for PathResource {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}{}{}{}{}{}",
-        self.name,
-        self.last_modified_time.duration_since(UNIX_EPOCH).unwrap().as_secs(),
-        self.size,
-        self.directory,
-        self.path,
-        self.protected_folder)
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "{}{}{}{}{}{}",
+            self.name,
+            self.last_modified_time
+                .duration_since(UNIX_EPOCH)
+                .unwrap()
+                .as_secs(),
+            self.size,
+            self.directory,
+            self.path,
+            self.protected_folder
+        )
     }
 }
-
 
 /// This function allows us to upload a file inside the CDS service.
 /// Pay attention at the order of the parameters in the body request.
@@ -161,13 +164,13 @@ pub async fn upload(mut data: Multipart) -> Result<HttpResponse, Error> {
 
         if param_field == "path" {
             while let Some(chunk) = param.try_next().await? {
-                path_value = format!("{}", std::str::from_utf8(&chunk).unwrap().to_string());
+                path_value = std::str::from_utf8(&chunk).unwrap().to_string();
             }
         }
 
         if param_field == "protected" {
             while let Some(chunk) = param.try_next().await? {
-                protected_value = format!("{}", std::str::from_utf8(&chunk).unwrap().to_string());
+                protected_value = std::str::from_utf8(&chunk).unwrap().to_string();
             }
 
             if &path_value != "archives" {
@@ -176,15 +179,15 @@ pub async fn upload(mut data: Multipart) -> Result<HttpResponse, Error> {
                 } else if protected_value == "false" {
                     final_path = PUBLIC_UPLOAD_PATH.to_owned() + path_value.borrow();
                 }
-            }else if &path_value == "archives" {
+            } else if &path_value == "archives" {
                 final_path = BASE_PATH.to_owned() + "archives";
             }
-            fs::create_dir_all(final_path.to_string()).expect("unable to create directory");
+            fs::create_dir_all(&final_path).expect("unable to create directory");
         }
 
         if param_field == "filename" {
             while let Some(chunk) = param.try_next().await? {
-                filename = format!("{}", std::str::from_utf8(&chunk).unwrap().to_string());
+                filename = std::str::from_utf8(&chunk).unwrap().to_string();
             }
             if filename.is_empty() {
                 is_directory = true;
@@ -196,7 +199,7 @@ pub async fn upload(mut data: Multipart) -> Result<HttpResponse, Error> {
         if param_field == "file" && !is_directory {
             let file = &filename;
             let file_path = format!("{}/{}", final_path, sanitize_filename::sanitize(&file));
-            let mut f = web::block(|| std::fs::File::create(file_path)).await??;
+            let mut f = web::block(|| fs::File::create(file_path)).await??;
             // param is a stream of bytes
             while let Some(chunk) = param.try_next().await? {
                 // let stream = chunk.unwrap();
@@ -235,8 +238,7 @@ pub async fn upload(mut data: Multipart) -> Result<HttpResponse, Error> {
 
     results.append(&mut result);
 
-    Ok(HttpResponse::Ok().json(results)).into()
-    // Ok(HttpResponse::Ok().into())
+    Ok(HttpResponse::Ok().json(results))
 }
 
 /// This function returns the passed file resource and is the public interface exposed by Ingress.
@@ -272,9 +274,10 @@ pub async fn index(req: HttpRequest) -> Result<afs::NamedFile, Error> {
             ))
         }
     } else {
-        Err(ErrorForbidden("You are not allowed to get this protected resource"))
+        Err(ErrorForbidden(
+            "You are not allowed to get this protected resource",
+        ))
     }
-
 }
 
 /// This function returns the passed file resource and is using the protected interface.
@@ -336,7 +339,7 @@ pub async fn delete(req: HttpRequest) -> Result<HttpResponse, Error> {
             .unwrap(),
     );
 
-    let result: bool;
+    let result;
 
     if path.exists() {
         if path.is_dir() {
@@ -347,20 +350,18 @@ pub async fn delete(req: HttpRequest) -> Result<HttpResponse, Error> {
         result = true
     } else {
         result = false
-    }
+    };
 
-    return match result {
+    match result {
         true => Ok(HttpResponse::Ok()
             .json(&Delete {
                 status: "OK".to_string(),
-            })
-            .into()),
+            })),
         false => Ok(HttpResponse::Ok()
             .json(&Delete {
                 status: "KO".to_string(),
-            })
-            .into()),
-    };
+            })),
+    }
 }
 
 /// This function returns a json containing the contents of the given path
@@ -405,7 +406,7 @@ pub async fn delete(req: HttpRequest) -> Result<HttpResponse, Error> {
 /// * (Result<HttpResponse, Error>: the json describing the filesystem structure of the requested path
 /// with some metadata
 #[get("/api/v1/list/{filename:.*}")]
-pub async fn list(req: actix_web::HttpRequest) -> Result<HttpResponse, Error> {
+pub async fn list(req: HttpRequest) -> Result<HttpResponse, Error> {
     let mut path = PathBuf::new();
     path.push(BASE_PATH);
     path.push(
@@ -474,6 +475,5 @@ pub async fn list(req: actix_web::HttpRequest) -> Result<HttpResponse, Error> {
             path: "".to_string(),
             protected_folder: false,
         }])))
-
     };
 }

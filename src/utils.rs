@@ -5,12 +5,12 @@ use actix_web::{get, Error, HttpResponse};
 use serde::Serialize;
 
 use actix_web::error::ErrorNotFound;
+use flate2::read::GzDecoder;
 use flate2::{write::GzEncoder, Compression};
 use serde_json;
 use serde_json::json;
 use std::fs::File;
 use std::path::PathBuf;
-use flate2::read::GzDecoder;
 use tar::Archive;
 
 const ARCHIVE_BASE_PATH: &str = "entando-data/archives";
@@ -88,8 +88,13 @@ pub async fn decompress(req: actix_web::HttpRequest) -> Result<HttpResponse, Err
     let mut archive_path = PathBuf::new();
     archive_path.push(ARCHIVE_BASE_PATH);
     let archive_name: String = req.match_info().query("filename").parse().unwrap();
-    let archive_full_path: String = format!("{}/{}", archive_path.as_path().to_str().unwrap(), archive_name).parse()?;
-    
+    let archive_full_path: String = format!(
+        "{}/{}",
+        archive_path.as_path().to_str().unwrap(),
+        archive_name
+    )
+    .parse()?;
+
     if PathBuf::from(&archive_full_path).exists() {
         let tar_gz = File::open(&archive_full_path)?;
         let tar = GzDecoder::new(tar_gz);
@@ -99,10 +104,9 @@ pub async fn decompress(req: actix_web::HttpRequest) -> Result<HttpResponse, Err
         // remove the archive
         fs::remove_file(&archive_full_path)?;
 
-
         Ok(HttpResponse::Ok().json(format!("{},{}", archive_name, &archive_full_path)))
     } else {
-        Err(ErrorNotFound(json!(EntandoData{
+        Err(ErrorNotFound(json!(EntandoData {
             status: "Ko".to_string(),
             path: "Wrong Path".to_string(),
         })))

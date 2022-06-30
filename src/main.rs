@@ -11,7 +11,6 @@ use actix_web_middleware_keycloak_auth::{DecodingKey, KeycloakAuth};
 
 use futures::future;
 
-
 const INTERNAL_PORT: &str = "8080";
 const PUBLIC_PORT: &str = "8081";
 
