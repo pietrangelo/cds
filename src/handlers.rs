@@ -339,17 +339,15 @@ pub async fn delete(req: HttpRequest) -> Result<HttpResponse, Error> {
             .unwrap(),
     );
 
-    let result;
-
-    if path.exists() {
+    let result = if path.exists() {
         if path.is_dir() {
             fs::remove_dir_all(&path)?; // Warning this will remove all the contents
         } else {
             fs::remove_file(&path)?;
         }
-        result = true
+        true
     } else {
-        result = false
+        false
     };
 
     match result {

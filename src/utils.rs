@@ -7,7 +7,6 @@ use serde::Serialize;
 use actix_web::error::ErrorNotFound;
 use flate2::read::GzDecoder;
 use flate2::{write::GzEncoder, Compression};
-use serde_json;
 use serde_json::json;
 use std::fs::File;
 use std::path::PathBuf;
@@ -83,7 +82,7 @@ impl fmt::Display for EntandoData {
 #[get("/api/v1/utils/decompress/{filename:.*}")]
 pub async fn decompress(req: actix_web::HttpRequest) -> Result<HttpResponse, Error> {
     // create the `ARCHIVE_BASE_PATH` path in case it does not exist
-    fs::create_dir_all(ARCHIVE_BASE_PATH.to_string()).expect("unable to create directory");
+    fs::create_dir_all(ARCHIVE_BASE_PATH).expect("unable to create directory");
 
     let mut archive_path = PathBuf::new();
     archive_path.push(ARCHIVE_BASE_PATH);
@@ -115,7 +114,7 @@ pub async fn decompress(req: actix_web::HttpRequest) -> Result<HttpResponse, Err
 
 #[get("/api/v1/utils/compress/{filename:.*}")]
 pub async fn compress(req: actix_web::HttpRequest) -> Result<HttpResponse, Error> {
-    fs::create_dir_all(ARCHIVE_BASE_PATH.to_string()).expect("unable to create directory");
+    fs::create_dir_all(ARCHIVE_BASE_PATH).expect("unable to create directory");
 
     let archive = File::create(format!("{}/entando-data.tar.gz", ARCHIVE_BASE_PATH))?;
 
@@ -144,7 +143,7 @@ pub async fn compress(req: actix_web::HttpRequest) -> Result<HttpResponse, Error
         }));
     }
     if path.exists() && path.is_file() {
-        let mut f = File::open(path.to_owned()).unwrap();
+        let mut f = File::open(&path).unwrap();
         tar.append_file("entando-data", &mut f).unwrap();
         let file = afs::NamedFile::open(format!("{}/entando-data.tar.gz", ARCHIVE_BASE_PATH))?;
         return Ok(HttpResponse::Ok().json(EntandoData {
