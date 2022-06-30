@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  labels:
+    deployment: cds
+  name: cds-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    limits:
+      storage: 50Gi
+    requests:
+      storage: 50Gi
+  #storageClassName: standard
