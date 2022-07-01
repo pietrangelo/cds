@@ -18,7 +18,7 @@ const PUBLIC_PORT: &str = "8081";
 async fn main() -> std::io::Result<()> {
     // load all env vars
     // uncomment to run locally and comment before creating the docker image.
-    //    dotenv::dotenv().unwrap();
+    //     dotenv::dotenv().unwrap();
 
     env_logger::init();
 

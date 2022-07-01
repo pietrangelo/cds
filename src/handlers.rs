@@ -250,18 +250,20 @@ pub async fn upload(mut data: Multipart) -> Result<HttpResponse, Error> {
 /// ```
 ///
 /// # Arguments
-/// * req (req: HttpRequest): the query string request
+/// * req (req: web::Path<(String, String): the query string request.
+/// {tenant} - deserialize to a String
+/// {filename} - deserialize to a String
 ///
 /// # Returns
 /// (Result<afs:NamedFile, Error>): the file resource requested
-#[get("/{filename:.*}")]
-pub async fn index(req: HttpRequest) -> Result<afs::NamedFile, Error> {
-    if req.match_info().query("filename").starts_with("public/") {
+#[get("/{tenant}/{filename:.*}")]
+pub async fn index(req: web::Path<(String, String)>) -> Result<afs::NamedFile, Error> {
+    let (_tenant, filename) = req.into_inner();
+    if filename.starts_with("public/") {
         let mut path = PathBuf::new();
         path.push(BASE_PATH);
         path.push(
-            req.match_info()
-                .query("filename")
+               filename
                 .parse::<PathBuf>()
                 .unwrap(),
         );
@@ -351,14 +353,12 @@ pub async fn delete(req: HttpRequest) -> Result<HttpResponse, Error> {
     };
 
     match result {
-        true => Ok(HttpResponse::Ok()
-            .json(&Delete {
-                status: "OK".to_string(),
-            })),
-        false => Ok(HttpResponse::Ok()
-            .json(&Delete {
-                status: "KO".to_string(),
-            })),
+        true => Ok(HttpResponse::Ok().json(&Delete {
+            status: "OK".to_string(),
+        })),
+        false => Ok(HttpResponse::Ok().json(&Delete {
+            status: "KO".to_string(),
+        })),
     }
 }
 
