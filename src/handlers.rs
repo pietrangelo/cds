@@ -441,7 +441,7 @@ pub async fn list(req: HttpRequest) -> Result<HttpResponse, Error> {
         }
 
         if path.is_file() {
-            let result = PathResource {
+            let result = vec![PathResource {
                 name: path
                     .file_name()
                     .unwrap()
@@ -453,7 +453,7 @@ pub async fn list(req: HttpRequest) -> Result<HttpResponse, Error> {
                 directory: false,
                 path: req.match_info().query("filename").to_string(),
                 protected_folder: false,
-            };
+            }];
 
             Ok(HttpResponse::Ok().json(result))
         } else {
