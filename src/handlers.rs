@@ -434,7 +434,7 @@ pub async fn list(req: HttpRequest) -> Result<HttpResponse, Error> {
             .unwrap(),
     );
 
-    return if path.exists() {
+    if path.exists() {
         let mut protected: bool = true;
         if path.starts_with("entando-data/public") {
             protected = false
@@ -493,5 +493,5 @@ pub async fn list(req: HttpRequest) -> Result<HttpResponse, Error> {
             path: "".to_string(),
             protected_folder: false,
         }])))
-    };
+    }
 }
