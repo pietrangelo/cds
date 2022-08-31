@@ -1,6 +1,6 @@
 [package]
 name = "cds"
-version = "1.0.1"
+version = "1.0.2"
 authors = ["Pietrangelo Masala <p.masala@entando.com>"]
 edition = "2021"
 
@@ -20,3 +20,6 @@ actix-web-middleware-keycloak-auth = "0.4.0"
 dotenv = "0.15.0"
 flate2 = "1.0.24"
 tar = "0.4.38"
+
+[dev-dependencies]
+reqwest = "0.11"
