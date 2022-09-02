@@ -1,0 +1,99 @@
+openapi: 3.0.0
+info:
+  title: Content Delivery Service 
+  description: Service for content delivery. Has 2 enpoint a private endpoint to manage contents and files , and a publick endpoint that works as a plain http web server to publicily serve files  
+  version: 1.0.0
+servers:
+  - url: http://aggatecds.sme.entando.org
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+paths:
+  /api/v1/upload/:
+    post:
+      description: 'API that upload one file into the specified path. Overwrite always any existing file by name. Can be used to upload an archive with multiple file that could be decompress later'
+      tags:
+        - Services
+      summary: Upload a file
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                path:
+                  type: string
+                  example: images
+                  description: 'directory path when the file will be saved. If you want upload a multiple file in one zip archive and extract with decompress , put into this parameter "archives" . If prtected is false will be added "public" as root relative dir  '
+                protected:
+                  type: boolean
+                  example: 'false'
+                  description: 'set if the resource is protected , set false to put resources in public directory'
+                filename:
+                  type: string
+                  example: my_photo.jpg
+                  description: 'the name with which the file will be saved in the directory specified in "path". Overwrites the original file name.'
+                file:
+                  type: string
+                  format: binary
+                  description: 'the file content'
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /api/v1/delete/{path}:
+    delete:
+      parameters:
+        - in: path
+          name: path   
+          required: true
+          schema:
+            type: string
+          description: 'The relative path of the file or entire directory to delete'
+      tags:
+        - Services
+      summary: Delete a file or a directory
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /api/v1/list/public/static/img:
+    get:
+      tags:
+        - General
+      summary: list
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /api/v1/utils/compress/:
+    get:
+      tags:
+        - General
+      summary: compress
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /api/v1/utils/decompress/entando-data.tar.gz:
+    get:
+      tags:
+        - General
+      summary: decompress
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
