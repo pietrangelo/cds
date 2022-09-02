@@ -10,6 +10,73 @@ components:
     bearerAuth:
       type: http
       scheme: bearer
+  schemas:
+    UploadResponse:
+      type: array
+      items:
+        $ref: "#/components/schemas/UploadInfo"
+      description: "Response of successful upload, will contain only one item"
+    UploadInfo:
+      type: object
+      properties:
+        status:
+          type: string
+          description: "Status feedback of the operation (Ok, Error) "
+        filename:
+          type: string
+          description: "The file name "
+        file:
+          type: string
+          description: "Not used reserved for future implementation "
+        date:
+          type: number
+          description: "Epoch date of the operation  "
+        path:
+          type: string
+          description: "The relative path of the file that will be used to retrieve it via web server endpoint"
+        is_protected_file:
+          type: string
+          description: "If the file is protected or not (true/false)"
+    DeleteResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          description: "Status feedback of the operation (Ok, Error) "
+    ListResponse:
+      type: array
+      items:
+        $ref: "#/components/schemas/ListInfo"
+      description: "Response of list"
+    ListInfo:
+      type: object
+      properties:
+        name:
+          type: string
+          description: "Status feedback of the operation (Ok, Error) "
+        last_modified_time:
+          $ref:  "#/components/schemas/LastModifiedResponse"
+        size:
+          type: number
+          description: "Size in byte"
+        directory:
+          type: boolean
+          description: "True if a list itemn is a directory"
+        path:
+          type: string
+          description: "The file absolute path"
+        protected_folder:
+          type: boolean
+          description: "If the directory is a protected foldr o not"
+    LastModifiedResponse:
+      type: object
+      properties:
+        secs_since_epoch:
+          type: number
+          description: "Epoch of last modified date "
+        nanos_since_epoch:
+          type: number
+          description: "Nanos related to secs_since_epoch "
 paths:
   /api/v1/upload/:
     post:
@@ -45,7 +112,9 @@ paths:
         '200':
           description: Successful response
           content:
-            application/json: {}
+            application/json: 
+              schema:
+                $ref: "#/components/schemas/UploadResponse"
   /api/v1/delete/{path}:
     delete:
       parameters:
@@ -57,18 +126,27 @@ paths:
           description: 'The relative path of the file or entire directory to delete'
       tags:
         - Services
-      summary: Delete a file or a directory
+      summary: Delete a file or a directory recursively 
       security:
         - bearerAuth: []
       responses:
         '200':
           description: Successful response
           content:
-            application/json: {}
-  /api/v1/list/public/static/img:
+            application/json: 
+              schema:
+                $ref: "#/components/schemas/DeleteResponse"
+  /api/v1/list/{path}:
     get:
+      parameters:
+        - in: path
+          name: path   
+          required: true
+          schema:
+            type: string
+          description: 'The relative path of the file or entire directory to listd'
       tags:
-        - General
+        - Services
       summary: list
       security:
         - bearerAuth: []
@@ -76,7 +154,16 @@ paths:
         '200':
           description: Successful response
           content:
-            application/json: {}
+            application/json: 
+              schema:
+                $ref: "#/components/schemas/ListResponse"
+        '404':
+          description: File not found
+          content:
+            application/json: 
+              schema:
+                $ref: "#/components/schemas/ListResponse"
+
   /api/v1/utils/compress/:
     get:
       tags:
