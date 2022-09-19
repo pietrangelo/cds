@@ -52,7 +52,7 @@ spec:
                   key: KC_PUBLIC_KEY
                   name: kc-pk-secret
           name: cds
-          image: docker.io/entando/cds:1.0.2
+          image: docker.io/entando/cds:1.0.3
           imagePullPolicy: IfNotPresent
           livenessProbe:
             httpGet:
