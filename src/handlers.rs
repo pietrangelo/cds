@@ -279,7 +279,7 @@ pub async fn upload(mut data: Multipart) -> Result<HttpResponse, Error> {
 #[get("/{tenant}/{filename:.*}")]
 pub async fn index(req: web::Path<(String, String)>) -> Result<afs::NamedFile, Error> {
     let (_tenant, filename) = req.into_inner();
-    if filename.starts_with("public/") {
+    if filename.starts_with("public/") || filename.starts_with("archives/") {
         let mut path = PathBuf::new();
         path.push(BASE_PATH);
         path.push(
