@@ -34,4 +34,11 @@ curl --location --request POST 'https://cds.domain.com/api/v1/upload/' \
 --form 'file=@"/home/user/Images/Screenshot_20220526_143107.png"'
 ```
 
+## Environment Varibles
 
+To be able to start the CDS server we must define these env vars:
+
+- **KEYCLOAK_PUBLIC_KEY**="-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAngLylJCK3Z5F7kwt0yJkud8dgfMZJsabGH7dnCYvwO4zwhSQnKczUcNoqH9iOTSX+kA6/xmUp7IxIUKDV3bIrk9k9Qu80c+k/PtPeEkgeAtRc3Z2oErGgI2UBd6qhxeUb1yd8cLh7FY1xEUOK/eFaUTwIDAQAB\n-----END PUBLIC KEY-----\n"
+- **RUST_LOG**="actix_web=trace,actix_server=trace,actix_web_middleware_keycloak_auth=trace"
+- **CORS_ALLOWED_ORIGIN**=https://host.domain.com (or All)
+- **CORS_ALLOWED_ORIGIN_END_WITH**=your-domain.com 
